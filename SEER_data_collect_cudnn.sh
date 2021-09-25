@@ -15,9 +15,10 @@ done
 # Collect Benchmark dataset & Test-set-I
 for algo in "algo0" "algo1" "algo2" "algo6" "algo7"
 do
-for i in $(seq 0 ${repeat_times}) 
+for i in $(seq 0 $[${repeat_times}-1]) 
 do
 # collect execution time, repeated several times to calculate average time.
+echo "======> collecting data for ${algo} ($[${i}+1]/${repeat_times}) ......"
 nvprof --print-gpu-trace --log-file ${tmp_results_path}nvprof_trace_${algo}_${i} ./cuDNN/collect_with_algo ${src_data_set_path}prof-ops-${algo}.txt
 done
 # collect metrics, only profile once.
@@ -28,15 +29,17 @@ for algo in "algo4" "algo5"
 do
 for i in $(seq 0 ${repeat_times}) 
 do
+echo "======> collecting data for ${algo} (${i}/${repeat_times}) ......"
 ./cuDNN/collect_with_algo ${src_data_set_path}prof-ops-${algo}.txt > ${tmp_results_path}time_results_${algo}_${i}
 done
 done
 
 # ctree for Algo5
 algo="algo5-ctree"
+echo "======> collecting data for ${algo} ......"
 nvprof --print-gpu-trace --metrics single_precision_fu_utilization,dram_utilization --log-file ${tmp_results_path}nvprof_metrics_${algo} ./cuDNN/collect_with_algo ${src_data_set_path}prof-ops-${algo}.txt
 
-# Test-set-II
+# # Test-set-II
 # ./cuDNN/collect_without_algo ${src_data_set_path}Test-set-II.txt > ${tmp_results_path}Test-set-II
 
 # Algo-pick-set
@@ -46,5 +49,6 @@ echo "======> collecting Algo-pick-set ......"
 # data parsing
 for algo in "algo0" "algo1" "algo2" "algo4" "algo5" "algo6" "algo7" "algo2-pre-kernel" "algo7-pre-kernel" "algo5-ctree" "Algo-pick-set"
 do
+echo "======> parsing data for ${algo} ....."
 python3 parse_src_data.py ${algo} 2>&1 | tee -a $log_file
 done

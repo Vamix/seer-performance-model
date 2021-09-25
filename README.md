@@ -17,8 +17,9 @@ SEER is a performance model, mainly targeted on cuDNN convolution GPU kernels. W
    ```
    bash ./SEER_data_collect_cudnn.sh
    ```
+   We collect three kinds of data sets: training set, Test-set-I and Test-set-II. Training set and Test-set-I are collected togther, we generate a large range of convolution configurations, randomly choose 70% as training set, the other 30% as Test-set-I. Test-set-II is user-defined dataset, you can manually choose the convolution configurations which you are interested and format them as a `Test-set-II.txt` file and use the script to collect their execution time.
 
-   You may need `sudo` to collect some of the metrics. If you find problems, try to add `sudo -E env "PATH=$PATH" "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" ` before the above command.
+   If you find problem running this command, you may need `sudo` to collect some of the metrics. Try to add `sudo -E env "PATH=$PATH" "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" ` before the above command.
 
 3. Fit model coefficients on training set. (using MATLAB)
 
@@ -105,7 +106,7 @@ If you would like to collect data by yourself, please format your data as Excel 
 
   \# of maximum number of thread blocks is obtained from CUDA Occupancy Calculator, please manually get these values (please refer to "CUDA Occupancy Calculator") and replace the values in   `parse_src_data.py` L34 ~ L49 with values of your target kernels.
 
-###CUDA Occupancy Calculator
+### CUDA Occupancy Calculator
 
 As we described in the paper, for most kernels in our experiments, B_max (Max # of blocks executing in 1 full wave) equals to the number of resident blocks in one GPU. We have provided these number in the data collect script for Titan Xp. If you want to calculate the number by yourself, please follow the steps:
 

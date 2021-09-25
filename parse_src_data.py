@@ -7,9 +7,9 @@ import sys
 import numpy as np
 
 target = sys.argv[1] 
-# src_dataset_path = "TitanXp_data/src/"
-# saved_path = "TitanXp_data/profiled/"
-# tmp_result_path = "TitanXp_data/tmp_results/"
+src_dataset_path = "data/src/"
+saved_path = "data/profiled/"
+tmp_result_path = "data/tmp_results/"
 
 repeat_times = 5
 time_min = 1
@@ -464,7 +464,7 @@ elif target == 'algo1':
         if data_128x64[i][9] > time_min and data_128x64[i][9] < time_max:
             data_128x64_new.append(data_128x64[i])
     data_128x128_new = []
-    for i in range(0, len(data_128x128)):
+    for i in range(1, len(data_128x128)):
         if data_128x128[i][9] > time_min and data_128x128[i][9] < time_max:
             data_128x128_new.append(data_128x128[i])
 
@@ -659,7 +659,7 @@ elif target == 'Algo-pick-set':
             tmp_time = float(op_config[algo_index])
             if tmp_time > 0 and tmp_time < current_kernel_time:
                 current_kernel_time = tmp_time
-        if current_kernel_time > 1 and current_kernel_time < 1000000:
+        if current_kernel_time > time_min:
             result_lines_new.append(op_config)
     
     write_to_xls_with_all_algos(result_lines_new, saved_path + target + ".xls")
@@ -728,7 +728,6 @@ elif target == 'algo7-pre-kernel':
                             kernel_type.append(tmp_lines[index+2].split("maxwell")[1].split("[")[0])  
                         else:
                             kernel_type.append("sn")
-
 
     time_128x128_3x3_pre_kernel = []
     time_128x128_5x5_pre_kernel = []

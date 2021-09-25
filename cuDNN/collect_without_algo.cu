@@ -20,10 +20,9 @@ int main(int   argc, char*   argv[]){
     init_cudnn();
     int num;
     ifstream infile; 
-    int batchSize, inputChan, inputHeight, inputWidth, outputChan, outputHeight, outputWidth, kernelH, kernelW, strideH, strideW, paddingH, paddingW, algo_index;
+    int batchSize, inputChan, inputHeight, inputWidth, outputChan, outputHeight, outputWidth, kernelH, kernelW, strideH, strideW, paddingH, paddingW;
     paddingH = 0; paddingW = 0;
     cudnnConvolutionFwdAlgo_t algo;
-    float tmp_time;
 
     if(argc > 1){ // profiling ops from file
       
@@ -63,20 +62,13 @@ int main(int   argc, char*   argv[]){
     }
     else{
       printf("=====> Algo picker data collecting...\n");
-      // printf("batchSize, inputChan, inputHeight, outputChan, outputHeight, kernelH, strideH, paddingH, time_0, time_1, time_2, time_3, time_4, time_5, time_6, time_7, best_real, best_by_cudnn\n");
       // for test algorithm picker
       int batchList[] = {128};                                     // 1
       int inwidList[] = {20, 40, 80, 100, 200, 300, 400, 500};     // 1x8 = 8
       int inchanList[] = {10, 20, 50, 100, 200, 400, 800, 1000};   // 1x8x8 = 64
       int outchanList[] = {10, 20, 50, 100, 200, 400, 800, 1000};  // 1x8x8x8 = 512
       int kerwidList[] = {1, 3, 5, 7, 9, 11};                      // 1x8x8x8x6 = 3072
-      int strideList[] ={1, 2, 3};                                 // 1x8x8x8x6x3 = 9216
-      // int batchList[] = {128};                                     // 1
-      // int inwidList[] = {20};//, 40, 80, 100, 200, 300, 400, 500};     // 1x8 = 8
-      // int inchanList[] = {10};//, 20, 50, 100, 200, 400, 800, 1000};   // 1x8x8 = 64
-      // int outchanList[] = {10};//, 20, 50, 100, 200, 400, 800, 1000};  // 1x8x8x8 = 512
-      // int kerwidList[] = {1};//, 3, 5, 7, 9, 11};                      // 1x8x8x8x6 = 3072
-      // int strideList[] ={1};//, 2, 3};                                 // 1x8x8x8x6x3 = 9216        
+      int strideList[] ={1, 2, 3};                                 // 1x8x8x8x6x3 = 9216 
 
       for(int i = 0; i < length(batchList); i++)
         for(int j = 0; j < length(inwidList); j++)

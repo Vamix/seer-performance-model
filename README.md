@@ -1,10 +1,24 @@
 ## SEER Performance Model
 
-SEER is an iteration time prediction model for CNNs, targeting on GPU platforms. For more details of SEER, please refer to our paper (SEER: A Time Prediction Model for CNNs from GPU Kernel’s View).
+SEER is a performance model, mainly targeted on cuDNN convolution GPU kernels. For more details of SEER, please refer to our paper (SEER: A Time Prediction Model for CNNs from GPU Kernel’s View).
+
+### Files in the repo
+
+`SEER_model/`: implementation of SEER model in MATLAB.
+
+`cuDNN/`: data collect code for cuDNN kernels.
+
+`TensorFlow/`: data collect code for TensorFlow operators.
+
+`SEER_data_collect_cudnn.sh`: data collect script for cuDNN kernels
+
+`SEER_data_collect_tensorflow.sh`: data collect script for TensorFlow operators
+
+`parse_src_data.py`: parser code for raw data.
 
 ### Instructions
 
-SEER is a performance model, mainly targeted on cuDNN convolution GPU kernels. We implement the model in MATLAB and collect metrics using `nvprof`. Besides, we also write parser code to parse the raw profiling results into formatted Excel files. The workflow and related command are as following:
+The workflow and related command are as following:
 
 1. Compile the data collecting program.
 
@@ -17,25 +31,55 @@ SEER is a performance model, mainly targeted on cuDNN convolution GPU kernels. W
    ```
    bash ./SEER_data_collect_cudnn.sh
    ```
-   We collect three kinds of data sets: training set, Test-set-I and Test-set-II. Training set and Test-set-I are collected togther, we generate a large range of convolution configurations, randomly choose 70% as training set, the other 30% as Test-set-I. Test-set-II is user-defined dataset, you can manually choose the convolution configurations which you are interested and format them as a `Test-set-II.txt` file and use the script to collect their execution time.
+   - There are totally 7 implementation of convolution kernels in cuDNN, we collect data of the 7 implementation and fit the performance model separately. We use the `./cuDNN/collect_with_algo` program the run convolution kernels and use `nvprof` to collect the metrics. 
 
-   If you find problem running this command, you may need `sudo` to collect some of the metrics. Try to add `sudo -E env "PATH=$PATH" "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" ` before the above command.
+   - The profiled kernel execution time and metrics will be parsed as Excel files and saved to `profile_result_path=data/profiled/`, you can change the path in `SEER_data_collect_cudnn.sh`. Each implementation may have several different variants (because of different tiling size), we save them in separate Excels. We randomly select 70% as Training-set and 30% as Test-set-I and save them in two sheets of one Excel. These Excels can be directly imported in the MATLAB code to fit model coefficients.
 
-3. Fit model coefficients on training set. (using MATLAB)
+   - You can change the configuration range of Training-set and Test-set-I, based on your hardware capacity. The configuration range is in `cuDNN/generate_ops.py` at L12~L83.
+
+   - You can also collect performance data of convolution configurations which you are interested, without assigning a specific convolution algorithm and let the cuDNN API to find the best one. You can run `cuDNN/collect_without_algo` to collect data, please organize your interested configurations as:
+
+     ```
+     # first line is the number of configs
+     3		
+     # the numbers in each line:
+     # batch_size, in_channel, in_wid, out_channel, out_wid, kernel_wid, stride, padding
+     128 16 128 16 128 3 1 1
+     128 16 128 16 128 3 1 1 
+     128 16 128 16 128 3 1 1 
+     ```
+
+     Save this as `Test-set-II.txt` and run `./cuDNN/collect_without_algo Test-set-II.txt`
+
+   - If you find problem running this command, you may need `sudo` to collect some of the metrics. 
+
+3. Fit model coefficients on training set. 
 
    ```
-   (execute this in MATLAB)
-   seer_train 
-   seer_train_other_ops
+   (execute this in MATLAB, in SEER_model/)
+   # this fits all the coefficients for performance model of cuDNN kernels.
+   seer_train 	
+   # this fits coefficients for TensorFlow operatos.
+   seer_train_other_ops	
    ```
 
-4. Predict time of unseen kernels on test set. (using MATLAB)
+4. Evaluate model accuracy on Test-set-I:
 
    ```
-   (execute this in MATLAB)
+   (execute this in MATLAB, in SEER_model/)
    seer_evaluate_test_set_I
+   ```
+
+   This returns the accuracy of each convolution implementation.
+
+5. Evaluate model accuracy on Test-set-II:
+
+   ```
+   (execute this in MATLAB, in SEER_model/)
    seer_evaluate_test_set_II
    ```
+
+   This predicts the execution time of input configurations under all the implementations and choose the best one as prediction.
 
 Ideally, the code should be runnable and the performance model should work for most NVIDIA GPUs, but we only evaluated it on Titan Xp and Titan V. If you find problems running the data collecting code or parser code, you can also collect the needed data by yourself and organize it as our format (please refer to "Data format"), then use our models in MATLAB to fit the coefficients and evaluate accuracy.
 
